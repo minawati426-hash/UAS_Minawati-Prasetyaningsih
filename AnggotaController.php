@@ -7,10 +7,19 @@ use Illuminate\Http\Request;
 
 class AnggotaController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $anggotas = Anggota::latest()->get();
-        return view('anggota.index', compact('anggotas'));
+        $keyword = $request->input('search');
+
+        $anggotas = Anggota::when($keyword, function ($query) use ($keyword) {
+                $query->where('nis', 'like', "%{$keyword}%")
+                      ->orWhere('nama', 'like', "%{$keyword}%")
+                      ->orWhere('kelas', 'like', "%{$keyword}%");
+            })
+            ->latest()
+            ->get();
+
+        return view('anggota.index', compact('anggotas', 'keyword'));
     }
 
     public function create()
