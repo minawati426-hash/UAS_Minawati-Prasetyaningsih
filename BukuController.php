@@ -8,10 +8,20 @@ use Illuminate\Support\Facades\Storage;
 
 class BukuController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $bukus = Buku::latest()->get();
-        return view('buku.index', compact('bukus'));
+        $keyword = $request->input('search');
+
+        $bukus = Buku::when($keyword, function ($query) use ($keyword) {
+                $query->where('kode_buku', 'like', "%{$keyword}%")
+                      ->orWhere('judul', 'like', "%{$keyword}%")
+                      ->orWhere('penulis', 'like', "%{$keyword}%")
+                      ->orWhere('kategori', 'like', "%{$keyword}%");
+            })
+            ->latest()
+            ->get();
+
+        return view('buku.index', compact('bukus', 'keyword'));
     }
 
     public function create()
